@@ -24,7 +24,6 @@ class WorldState:
         self.next_entity_id = 0
         self.map = generate_map(self.width, self.height)
         self.visible_tiles = []
-        self.explored_map = [[False for _ in range(self.width)] for _ in range(self.height)]
 
         self.message_log = []
 

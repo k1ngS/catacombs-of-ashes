@@ -6,7 +6,6 @@ from systems.ecs import Direction, Position
 def system_update_fov(world_state):
     """
     Update the field of view (FOV) for the player.
-    This function marks tiles as explored when they come into the player's FOV.
     """
     ecs_world = world_state.world  # Access the ECS world dictionary
     world_state.visible_tiles = [[False for _ in range(world_state.width)] for _ in range(world_state.height)]
@@ -35,4 +34,6 @@ def system_update_fov(world_state):
 
                     if dot_product > FOV_WIDTH:
                         world_state.visible_tiles[y][x] = True
-                        world_state.explored_map[y][x] = True  # Mark as explored
+
+                        player_pos = world_state.world[Position][world_state.player_id]
+                        world_state.visible_tiles[player_pos.y][player_pos.x] = True  # Ensure player's tile is always visible

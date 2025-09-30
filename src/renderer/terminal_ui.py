@@ -32,16 +32,16 @@ class TerminalUI:
             row = ""
             for x in range(self.world.width):
                 current_coords = (x, y)
-                if current_coords in entities_for_render:
-                    # Get symbol and color from Renderable component
-                    symbol = entities_for_render[current_coords].symbol
-                    color = entities_for_render[current_coords].color
-                    row += f"[{color}]{symbol}[/{color}]"
-                else:
-                    if not self.world.explored_map[y][x]:
-                        row += " "
+                if self.world.visible_tiles[y][x]:
+                    if current_coords in entities_for_render:
+                        # Get symbol and color from Renderable component
+                        symbol = entities_for_render[current_coords].symbol
+                        color = entities_for_render[current_coords].color
+                        row += f"[{color}]{symbol}[/{color}]"
                     else:
                         row += self.world.map[y][x]
+                else:
+                    row += " " # Not visible tile
 
             table.add_row(row)
         self.console.print(table)

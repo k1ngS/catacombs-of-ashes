@@ -2,7 +2,7 @@ import random
 from dataclasses import dataclass
 from typing import List, Tuple
 
-from systems.ecs import AI, Combat, Position, Renderable
+from systems.ecs import AI, Combat, Direction, Position, Renderable
 from systems.procedural_gen import generate_map
 
 
@@ -16,12 +16,15 @@ class WorldState:
         self.game_over = False
         self.world = {
             Position: {},
+            Direction: {},
             Renderable: {},
             Combat: {},
             AI: {},
         }
         self.next_entity_id = 0
         self.map = generate_map(self.width, self.height)
+        self.visible_tiles = []
+        self.explored_map = [[False for _ in range(self.width)] for _ in range(self.height)]
 
         self.message_log = []
 
@@ -53,12 +56,21 @@ class WorldState:
 
     def process_player_command(self, cmd: str):
         pos_component = self.world[Position][self.player_id]
+        dir_component = self.world[Direction][self.player_id]
         x, y = pos_component.x, pos_component.y
 
-        if cmd == "w": y -= 1
-        if cmd == "s": y += 1
-        if cmd == "a": x -= 1
-        if cmd == "d": x += 1
+        if cmd == "w":
+            y -= 1
+            dir_component.dx, dir_component.dy = 0, -1
+        if cmd == "s":
+            y += 1
+            dir_component.dx, dir_component.dy = 0, 1
+        if cmd == "a":
+            x -= 1
+            dir_component.dx, dir_component.dy = -1, 0
+        if cmd == "d":
+            x += 1
+            dir_component.dx, dir_component.dy = 1, 0
 
         # Calculate new position and validate
         new_position = (x, y)
@@ -108,6 +120,7 @@ class WorldState:
     def create_player(self, x: int, y: int):
         player_id = self.create_entity()
         self.world[Position][player_id] = Position(x, y)
+        self.world[Direction][player_id] = Direction(dx=0, dy=1)  # Default facing down
         self.world[Renderable][player_id] = Renderable(symbol='@', color='bright_green')
         self.world[Combat][player_id] = Combat(current_hp=10, max_hp=10, attack=2, defense=1)
 

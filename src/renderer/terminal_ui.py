@@ -27,6 +27,7 @@ class TerminalUI:
                 # Added to dictionary for rendering
                 entities_for_render[(pos_component.x, pos_component.y)] = render_component
 
+        # Render the map with entities
         for y in range(self.world.height):
             row = ""
             for x in range(self.world.width):
@@ -37,7 +38,10 @@ class TerminalUI:
                     color = entities_for_render[current_coords].color
                     row += f"[{color}]{symbol}[/{color}]"
                 else:
-                    row += self.world.map[y][x]
+                    if not self.world.explored_map[y][x]:
+                        row += " "
+                    else:
+                        row += self.world.map[y][x]
 
             table.add_row(row)
         self.console.print(table)

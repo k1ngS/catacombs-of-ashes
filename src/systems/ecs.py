@@ -3,6 +3,11 @@ from dataclasses import dataclass
 
 
 @dataclass
+class Direction:
+    dx: int
+    dy: int
+
+@dataclass
 class Position:
     x: int
     y: int

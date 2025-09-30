@@ -21,7 +21,7 @@ class GameLoop:
 
     def run(self):
         with Live(console=self.console, refresh_per_second=30) as live:
-            while self.running:
+            while self.running and not self.world.game_over:
                 self.ui.render()
                 command = self.ui.get_input()
                 if command == "q":

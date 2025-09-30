@@ -1,6 +1,7 @@
 import random
 
-from systems.ecs import AI, Position
+from systems.combat_system import system_resolve_combat
+from systems.ecs import AI, Combat, Position
 
 
 def simple_ai_system(world_state):
@@ -16,11 +17,16 @@ def simple_ai_system(world_state):
         dx, dy = random.choice([(0, 1), (0, -1), (1, 0), (-1, 0), (0,0)])  # Including (0,0) to allow no movement
         new_x = pos_component.x + dx
         new_y = pos_component.y + dy
+        target_id = world_state.get_entity_at_position(new_x, new_y)
+        if target_id == world_state.player_id:
+            # Initiate combat
+            system_resolve_combat(world_state, entity_id, target_id)
 
-        # Check boundaries (assuming the map is a grid of '.' and '#')
-        if (0 <= new_x < world_state.width and
-            0 <= new_y < world_state.height and
-            world_state.map[new_y][new_x] == "[grey50]░[/]"):
+        elif target_id is None:
+            # Check boundaries (assuming the map is a grid of '.' and '#')
+            if (0 <= new_x < world_state.width and
+                0 <= new_y < world_state.height and
+                world_state.map[new_y][new_x] == "[grey50]░[/]"):
 
-            pos_component.x = new_x
-            pos_component.y = new_y
+                pos_component.x = new_x
+                pos_component.y = new_y

@@ -13,6 +13,7 @@ class WorldState:
     map: List[List[str]] = None # type: ignore
 
     def __post_init__(self):
+        self.game_over = False
         self.world = {
             Position: {},
             Renderable: {},
@@ -51,8 +52,8 @@ class WorldState:
         return free_positions
 
     def process_player_command(self, cmd: str):
-        post_component = self.world[Position][self.player_id]
-        x, y = post_component.x, post_component.y
+        pos_component = self.world[Position][self.player_id]
+        x, y = pos_component.x, pos_component.y
 
         if cmd == "w": y -= 1
         if cmd == "s": y += 1
@@ -63,13 +64,17 @@ class WorldState:
         new_position = (x, y)
         target_id = self.get_entity_at_position(*new_position)
         if target_id is not None:
-            self.add_message(f"You attack the entity({target_id}) at position {new_position}!")
+            if target_id in self.world[Combat]:
+                # Initiate combat
+                from systems.combat_system import system_resolve_combat
+                system_resolve_combat(self, self.player_id, target_id)
+                return True
             return False  # Position occupied by another entity
 
 
         # checar colisoes simples e limites
         elif 0 <= x < self.width and 0 <= y < self.height and self.map[y][x] == "[grey50]░[/]":
-            post_component.x, post_component.y = x, y
+            pos_component.x, pos_component.y = x, y
             return True
 
         return False
@@ -95,6 +100,11 @@ class WorldState:
         self.next_entity_id += 1
         return entity_id
 
+    def remove_entity(self, entity_id: int):
+        """Remove an entity and all its components from the world."""
+        for component in self.world.values():
+            component.pop(entity_id, None)
+
     def create_player(self, x: int, y: int):
         player_id = self.create_entity()
         self.world[Position][player_id] = Position(x, y)
@@ -106,6 +116,6 @@ class WorldState:
     def create_enemy(self, x: int, y: int):
         enemy_id = self.create_entity()
         self.world[Position][enemy_id] = Position(x, y)
-        self.world[Renderable][enemy_id] = Renderable('g', 'red')
-        self.world[Combat][enemy_id] = Combat(5, 5, 1, 0)
+        self.world[Renderable][enemy_id] = Renderable(symbol='g', color='red')
+        self.world[Combat][enemy_id] = Combat(current_hp=5, max_hp=5, attack=1, defense=0)
         self.world[AI][enemy_id] = AI()

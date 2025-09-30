@@ -20,7 +20,6 @@ class WorldState:
             AI: {},
         }
         self.next_entity_id = 0
-
         self.map = generate_map(self.width, self.height)
 
         self.message_log = []
@@ -51,6 +50,37 @@ class WorldState:
                     free_positions.append((x, y))
         return free_positions
 
+    def process_player_command(self, cmd: str):
+        post_component = self.world[Position][self.player_id]
+        x, y = post_component.x, post_component.y
+
+        if cmd == "w": y -= 1
+        if cmd == "s": y += 1
+        if cmd == "a": x -= 1
+        if cmd == "d": x += 1
+
+        # Calculate new position and validate
+        new_position = (x, y)
+        target_id = self.get_entity_at_position(*new_position)
+        if target_id is not None:
+            self.add_message(f"You attack the entity({target_id}) at position {new_position}!")
+            return False  # Position occupied by another entity
+
+
+        # checar colisoes simples e limites
+        elif 0 <= x < self.width and 0 <= y < self.height and self.map[y][x] == "[grey50]░[/]":
+            post_component.x, post_component.y = x, y
+            return True
+
+        return False
+
+    def get_entity_at_position(self, x: int, y: int) -> int | None:
+        for entity_id, pos in self.world[Position].items():
+            if pos.x == x and pos.y == y:
+                return entity_id
+        return None
+
+
     # --- Auxiliary methods of world logs ---
     def add_message(self, text: str):
         self.message_log.append(text)
@@ -79,19 +109,3 @@ class WorldState:
         self.world[Renderable][enemy_id] = Renderable('g', 'red')
         self.world[Combat][enemy_id] = Combat(5, 5, 1, 0)
         self.world[AI][enemy_id] = AI()
-
-    def process_player_command(self, cmd: str):
-        post_component = self.world[Position][self.player_id]
-        x, y = post_component.x, post_component.y
-
-        if cmd == "w": y -= 1
-        if cmd == "s": y += 1
-        if cmd == "a": x -= 1
-        if cmd == "d": x += 1
-
-        # checar colisoes simples e limites
-        if 0 <= x < self.width and 0 <= y < self.height and self.map[y][x] == "[grey50]░[/]":
-            post_component.x, post_component.y = x, y
-
-            return True
-        return False

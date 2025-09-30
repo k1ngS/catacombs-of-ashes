@@ -1,3 +1,4 @@
+import random
 from dataclasses import dataclass
 from typing import List, Tuple
 
@@ -22,8 +23,31 @@ class WorldState:
 
         self.map = generate_map(self.width, self.height)
 
-        self.create_player(1, 1)
-        self.create_enemy(5, 5)
+        # Get free positions to place entities
+        free_positions = self._find_free_position()
+
+        # Verify there are enough free positions to place entities safely
+        if not free_positions:
+            raise ValueError("No free positions available on the map to place entities.")
+
+        # Create player and enemies at predefined positions for simplicity
+        player_pos = random.choice(free_positions)
+        self.create_player(player_pos[0], player_pos[1])
+
+        free_positions.remove(player_pos)  # Ensure enemy doesn't spawn on player
+
+        if free_positions:
+            enemy_pos = random.choice(free_positions)
+            self.create_enemy(enemy_pos[0], enemy_pos[1])
+
+    def _find_free_position(self) -> list[tuple[int, int]]:
+        """Find all free positions on the map."""
+        free_positions = []
+        for y in range(self.height):
+            for x in range(self.width):
+                if self.map[y][x] == "[grey50]░[/]":
+                    free_positions.append((x, y))
+        return free_positions
 
     # --- Auxiliary methods of ecs ---
     def create_entity(self) -> int:

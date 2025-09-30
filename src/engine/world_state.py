@@ -23,6 +23,8 @@ class WorldState:
 
         self.map = generate_map(self.width, self.height)
 
+        self.message_log = []
+
         # Get free positions to place entities
         free_positions = self._find_free_position()
 
@@ -48,6 +50,13 @@ class WorldState:
                 if self.map[y][x] == "[grey50]░[/]":
                     free_positions.append((x, y))
         return free_positions
+
+    # --- Auxiliary methods of world logs ---
+    def add_message(self, text: str):
+        self.message_log.append(text)
+        MAX_LOG_SIZE = 5
+        if len(self.message_log) > MAX_LOG_SIZE:
+            self.message_log.pop(0)
 
     # --- Auxiliary methods of ecs ---
     def create_entity(self) -> int:

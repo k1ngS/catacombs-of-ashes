@@ -42,6 +42,10 @@ class TerminalUI:
             table.add_row(row)
         self.console.print(table)
 
+        self.console.print("\n--- Log ---")
+        for message in self.world.message_log:
+            self.console.print(message)
+
     def get_input(self) -> str:
         # ler um único char sem enter (unix)
         fd = sys.stdin.fileno()
